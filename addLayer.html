@@ -1,0 +1,80 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ArcGIS API for JavaScript Tutorials: Add layers to a map </title>
+  <h2>Add feature layers in a 2D map:</h2>
+  <pre>
+
+    Applications can access and display feature layers that are hosted onArcGIS OnlineorArcGIS Enterprise.
+    A hosted feature layer contains features (records) with a geometry and a set of attributes.
+    Each hosted feature layer has a REST endpoint with a unique URL.
+    A FeatureLayer class can use the URL to access and draw the point, line, or polygon features in a map.
+    If properties such as the renderer or pop-up have not been pre-defined for the hosted feature layer, the map will use default symbols and pop-ups will not be enabled.
+
+    To learn how to enhance the visualization and behavior of feature layers, visit the Style feature layers, Configure pop-ups, and Filter a feature layer tutorials.
+    https://developers.arcgis.com/javascript/latest/guide/add-layers-to-a-map/
+  </pre>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.17/"></script>
+
+  <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer"
+      ], function(Map, MapView, FeatureLayer) {
+
+        var map = new Map({
+          basemap: "topo-vector"
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-118.80500, 34.02700], // longitude, latitude
+        zoom: 13
+        });
+
+
+        // Add Trailheads feature layer (points)
+        // Set the url, renderer, and labelingInfo property to the objects created above and add it to the map.
+        var trailheadsLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0"
+        });
+
+        map.add(trailheadsLayer);
+
+        // Add Trails feature layer (lines)
+        var trailsLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0"
+        });
+
+        map.add(trailsLayer, 0);
+
+        // Add Parks and open spaces (polygons)
+        var parksLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Parks_and_Open_Space/FeatureServer/0"
+        });
+
+        map.add(parksLayer, 0);
+
+      });
+  </script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>

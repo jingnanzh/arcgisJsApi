@@ -1,0 +1,183 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ArcGIS API for JavaScript Tutorials: Style feature layers </title>
+  <h2>Style feature layers in a 2D map:</h2>
+  <pre>
+    Applications can display feature layer data with different styles to enhance the visualization. The first step is to select the correct type of Renderer.
+    A SimpleRenderer applies the same symbol to all features, a UniqueValueRenderer applies a different symbol to each unique attribute value, and a ClassBreaksRenderer applies a symbol to a range of numeric values.
+    Renderers are responsible for accessing the data and applying the appropriate symbol to each feature when the layer draws.
+    Labels can also be displayed to show attribute information for each feature, and visual variables and expressions can also be used to create more complex data-driven visualizations.
+    Visit the documentation to learn more about styling layers.
+    
+    To learn how to enhance the visualization and behavior of feature layers, visit the Style feature layers, Configure pop-ups, and Filter a feature layer tutorials.
+    https://developers.arcgis.com/javascript/latest/guide/style-feature-layers/
+  </pre>
+
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.17/"></script>
+
+  <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer"
+      ], function(Map, MapView, FeatureLayer) {
+
+        var map = new Map({
+          basemap: "topo-vector"
+        });
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [-118.80500, 34.02700], // longitude, latitude
+        zoom: 13
+        });
+
+        // Create a trailheadsRenderer object and define it as a simple renderer and set the symbol properties to draw an hiker image that is a picture-marker, 18px in size for each point. Use the url for the image.
+        var trailheadsRenderer = {
+          type: "simple",
+          symbol: {
+            type: "picture-marker",
+            url: "http://static.arcgis.com/images/Symbols/NPS/npsPictograph_0231b.png",
+            width: "18px",
+            height: "18px"
+          }
+        };
+
+        // Create a trailheadsLabels object to define the labelingInfo. Set the symbol to draw the labels white #FFFFFF with a green #5E8D74 halo, place them centered above the feature, and use a simple expression to reference the TRL_NAME field (the data to render).
+        var trailheadsLabels = {
+          symbol: {
+            type: "text",
+            color: "#FFFFFF",
+            haloColor: "#5E8D74",
+            haloSize: "2px",
+            font: {
+              size: "12px",
+              family: "Noto Sans",
+              style: "italic",
+              weight: "normal"
+            }
+          },
+          labelPlacement: "above-center",
+          labelExpressionInfo: {
+            expression: "$feature.TRL_NAME"
+          }
+        };
+
+        // Add Trailheads feature layer (points)
+        // Set the url, renderer, and labelingInfo property to the objects created above and add it to the map.
+        var trailheads = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0",
+          renderer: trailheadsRenderer,
+          labelingInfo: [trailheadsLabels]
+        });
+
+        map.add(trailheads);
+
+        // Style trail width by elevation gain
+        var trailsRenderer = {
+          type: "simple",
+          symbol: {
+            color: "#BA55D3",
+            type: "simple-line",
+            style: "solid"
+          },
+          visualVariables: [
+            {
+              type: "size",
+              field: "ELEV_GAIN",
+              minDataValue: 0,
+              maxDataValue: 2300,
+              minSize: "3px",
+              maxSize: "7px"
+            }
+          ]
+        };
+
+        // Create a trails FeatureLayer and set the url, renderer, and opacity (0.75) properties, and add it to the map.
+        var trails = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0",
+          renderer: trailsRenderer,
+          opacity: 0.75
+        });
+
+        map.add(trails, 0);
+
+        //Style a trails layer to show bike-only trails
+        var bikeTrailsRenderer = {
+          type: "simple",
+          symbol: {
+            type: "simple-line",
+            style: "short-dot",
+            color: "#FF91FF",
+            width: "1px"
+          }
+        };
+
+        var bikeTrails = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0",
+          renderer: bikeTrailsRenderer,
+          definitionExpression: "USE_BIKE = 'YES'"
+        });
+
+        map.add(bikeTrails, 1);
+
+        // Style park areas with unique colors
+        function createFillSymbol(value, color) {
+          return {
+            value: value,
+            symbol: {
+              color: color,
+              type: "simple-fill",
+              style: "solid",
+              outline: {
+                style: "none"
+              }
+            },
+            label: value
+          };
+        }
+
+        var openSpacesRenderer = {
+          type: "unique-value",
+          field: "TYPE",
+          uniqueValueInfos: [
+            createFillSymbol("Natural Areas", "#9E559C"),
+            createFillSymbol("Regional Open Space", "#A7C636"),
+            createFillSymbol("Local Park", "#149ECE"),
+            createFillSymbol("Regional Recreation Park", "#ED5151")
+          ]
+        };
+
+        // Create an openspaces FeatureLayer, set the renderer and opacity (0.2) properties, and add it to the map.
+        var openspaces = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Parks_and_Open_Space/FeatureServer/0",
+          renderer: openSpacesRenderer,
+          opacity: 0.5
+        });
+
+        map.add(openspaces, 0);
+
+      });
+  </script>
+</head>
+<body>
+  <div id="viewDiv"></div>
+</body>
+</html>
