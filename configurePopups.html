@@ -2,17 +2,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ArcGIS API for JavaScript Tutorials: Style feature layers </title>
-  <h2>Style feature layers in a 2D map:</h2>
+  <title>ArcGIS API for JavaScript Tutorials: Configure pop-ups </title>
+  <h2>Style and format the content in pop-ups for feature layers:</h2>
   <pre>
-    Applications can display feature layer data with different styles to enhance the visualization. The first step is to select the correct type of Renderer.
-    A SimpleRenderer applies the same symbol to all features, a UniqueValueRenderer applies a different symbol to each unique attribute value, and a ClassBreaksRenderer applies a symbol to a range of numeric values.
-    Renderers are responsible for accessing the data and applying the appropriate symbol to each feature when the layer draws.
-    Labels can also be displayed to show attribute information for each feature, and visual variables and expressions can also be used to create more complex data-driven visualizations.
-    Visit the documentation to learn more about styling layers.
+    Applications can show pop-ups with attribute information for feature layers and graphics when you click on the map.
+    Pop-ups can be formatted and styled by creating a PopupTemplate object.
+    A PopupTemplate allows you to define the title, content and how the media is displayed.
+    You can pass in HTML, a function or a list of fields to display a table view.
+    Arcade Expressions can also be used to perform calculations and format the data before it is displayed.
+    If you have graphics or a graphics layer, individual pop-ups can be defined for each graphic.
+    Learn more about creating and formatting pop-ups in the documentation.
 
-    To learn how to enhance the visualization and behavior of feature layers, visit the Style feature layers, Configure pop-ups, and Filter a feature layer tutorials.
-    https://developers.arcgis.com/javascript/latest/guide/style-feature-layers/
+    In this tutorial, you will create and apply a pop-up template for the Trailheads, Trails, and Parks and Open Spaces layers.
+    https://developers.arcgis.com/javascript/latest/guide/configure-pop-ups/
   </pre>
 
   <style>
@@ -76,16 +78,32 @@
           }
         };
 
+        var popupTrailheads = {
+          title: "{TRL_NAME}",
+          content:
+            "<b>City:</b> {CITY_JUR}<br><b>Cross Street:</b> {X_STREET}<br><b>Parking:</b> {PARKING}<br><b>Elevation:</b> {ELEV_FT} ft"
+        };
+
         // Add Trailheads feature layer (points)
         // Set the url, renderer, and labelingInfo property to the objects created above and add it to the map.
         var trailheads = new FeatureLayer({
           url:
             "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0",
           renderer: trailheadsRenderer,
-          labelingInfo: [trailheadsLabels]
+          labelingInfo: [trailheadsLabels],
+          popupTemplate: popupTrailheads
+
         });
 
         map.add(trailheads);
+
+        //Create a popupTemplate that sets the title to Trail Information and uses a function to render the content.
+        var popupTrails = {
+          title: "Trail Information",
+          content: function () {
+            return "This is {TRL_NAME} with {ELEV_GAIN} ft of climbing.";
+          }
+        };
 
         // Style trail width by elevation gain
         var trailsRenderer = {
@@ -112,7 +130,9 @@
           url:
             "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0",
           renderer: trailsRenderer,
-          opacity: 0.75
+          opacity: 0.75,
+          outFields: ["TRL_NAME", "ELEV_GAIN"],
+          popupTemplate: popupTrails
         });
 
         map.add(trails, 0);
@@ -164,12 +184,64 @@
           ]
         };
 
+        //Create a popupTemplate that sets the title to {PARK_NAME} and defines an array of fieldsInfos to be displayed in the content. This will create a table view with the field name on the left and the field value on the right.
+        var popupOpenspaces = {
+          title: "{PARK_NAME}",
+          content: [
+            {
+              type: "fields",
+              fieldInfos: [
+                {
+                  fieldName: "AGNCY_NAME",
+                  label: "Agency",
+                  isEditable: true,
+                  tooltip: "",
+                  visible: true,
+                  format: null,
+                  stringFieldOption: "text-box"
+                },
+                {
+                  fieldName: "TYPE",
+                  label: "Type",
+                  isEditable: true,
+                  tooltip: "",
+                  visible: true,
+                  format: null,
+                  stringFieldOption: "text-box"
+                },
+                {
+                  fieldName: "ACCESS_TYP",
+                  label: "Access",
+                  isEditable: true,
+                  tooltip: "",
+                  visible: true,
+                  format: null,
+                  stringFieldOption: "text-box"
+                },
+                {
+                  fieldName: "GIS_ACRES",
+                  label: "Acres",
+                  isEditable: true,
+                  tooltip: "",
+                  visible: true,
+                  format: {
+                    places: 2,
+                    digitSeparator: true
+                  },
+                  stringFieldOption: "text-box"
+                }
+              ]
+            }
+          ]
+        };
         // Create an openspaces FeatureLayer, set the renderer and opacity (0.2) properties, and add it to the map.
         var openspaces = new FeatureLayer({
           url:
             "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Parks_and_Open_Space/FeatureServer/0",
           renderer: openSpacesRenderer,
-          opacity: 0.5
+          opacity: 0.5,
+          outFields: ["TYPE", "PARK_NAME", "AGNCY_NAME", "ACCESS_TYP", "GIS_ACRES"],
+          popupTemplate: popupOpenspaces
         });
 
         map.add(openspaces, 0);
